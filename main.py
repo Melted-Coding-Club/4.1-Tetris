@@ -5,18 +5,21 @@ fps = 60
 
 
 class Piece:
-    def __init__(self, game, type, colour="red"):
+    def __init__(self, game, p_type="z", colour="red"):
         self.game = game
         self.origin = [0, 0]
         self.colour = colour
-        self.type = type
+        self.type = p_type
 
         # Each list of offsets should have the same amount of tuples
-        self.offsets = [
-            [(0, 0), (1, 0), (1, 1), (2, 1), (3, 1)],
-            [(1, 0), (1, 1), (0, 1), (0, 2), (7, 1)],
-        ]
+        self.offsets = []
         self.offset_num = 0
+        if self.type == "z":
+            self.offsets = [
+                [(0, 0), (1, 0), (1, 1), (2, 1), (3, 1)],
+                [(1, 0), (1, 1), (0, 1), (0, 2), (7, 1)],
+            ]
+
         self.rects = []
         for i in range(len(self.offsets[self.offset_num])):
             x = self.game.grid_size * self.offsets[self.offset_num][i][0] + self.origin[0] + game.game_location[0]
