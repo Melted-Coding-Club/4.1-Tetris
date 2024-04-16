@@ -16,8 +16,10 @@ class Piece:
         self.offset_num = 0
         if self.type == "z":
             self.offsets = [
-                [(0, 0), (1, 0), (1, 1), (2, 1), (3, 1)],
-                [(1, 0), (1, 1), (0, 1), (0, 2), (7, 1)],
+                [(0, 0), (1, 0), (1, 1), (2, 1)],  # Original position
+                [(1, 0), (1, 1), (0, 1), (0, 2)],  # Rotated 90 degrees clockwise
+                [(2, 1), (1, 1), (1, 0), (0, 0)],  # Rotated 180 degrees clockwise
+                [(0, 2), (0, 1), (1, 1), (1, 0)]   # Rotated 270 degrees clockwise
             ]
 
     def render(self):
@@ -29,9 +31,20 @@ class Piece:
                 self.game.grid_size
             ))
 
-    def update_rects(self):
+    def update_board(self):
         blocks = []
+        for offset in self.offsets[self.offset_num]:
+            blocks.append({
+                "location": (offset[0] + self.origin[0], offset[1] + self.origin[1]),
+                "colour": self.colour
+            })
+
+        self.game.board.extend(blocks)
+
+    def update_rects(self):
         # returns True if a collision is made
+
+        blocks = []
         for offset in self.offsets[self.offset_num]:
             blocks.append({
                 "location": (offset[0] + self.origin[0], offset[1] + self.origin[1]),
@@ -44,11 +57,9 @@ class Piece:
 
         for block in blocks:
             if block["location"][1] >= self.game.game_area[1]:
-                self.game.board.extend(blocks)
                 return True
 
             if block["location"] in board_locations:
-                self.game.board.extend(blocks)
                 return True
 
     def move(self, direction):
@@ -63,6 +74,7 @@ class Piece:
         if self.update_rects():
             self.origin = origin
             self.update_rects()
+            self.update_board()
             # return true for collision
             return True
 
@@ -80,7 +92,6 @@ class Game:
         self.pieces = [
             Piece(self),
         ]
-
         self.board = []
 
         self.USEREVENT = 1
@@ -103,6 +114,7 @@ class Game:
         # if a collision is made while moving piece
         if self.pieces[0].move(direction):
             # spawn a new piece
+            self.pieces.remove(self.pieces[0])
             self.pieces.insert(0, Piece(self))
 
     def render(self):
@@ -117,6 +129,14 @@ class Game:
         ))
         for piece in self.pieces:
             piece.render()
+
+        for block in self.board:
+            pygame.draw.rect(self.screen, block["colour"], pygame.Rect(
+                block["location"][0] * self.grid_size + self.game_location[0],
+                block["location"][1] * self.grid_size + self.game_location[1],
+                self.grid_size,
+                self.grid_size
+            ))
 
         pygame.display.update()
 
