@@ -2,20 +2,6 @@ import random
 import pygame
 import sys
 
-fps = 60
-
-
-types = ["I", "o", "t", "j", "l", "s", "z"]
-colours = {
-    'I': (0, 255, 255),   # Cyan
-    'O': (255, 255, 0),   # Yellow
-    'T': (128, 0, 128),   # Purple
-    'J': (0, 0, 255),     # Blue
-    'L': (255, 165, 0),   # Orange
-    'S': (0, 255, 0),     # Green
-    'Z': (255, 0, 0)      # Red
-}
-
 
 class Piece:
     def __init__(self, game, p_type="z", colour="red"):
@@ -96,7 +82,7 @@ class Piece:
 
         self.game.board.extend(blocks)
 
-    def update_rects(self, direction=None):
+    def update_blocks(self, direction=None):
         # returns True if a collision is made
 
         blocks = []
@@ -113,6 +99,8 @@ class Piece:
         for block in blocks:
             if block["location"][1] >= self.game.game_area[1]:
                 return True
+            if block["location"][0] >= self.game.game_area[0] or block["location"][0] < 0:
+                return True
 
             if block["location"] in board_locations:
                 return True
@@ -126,16 +114,16 @@ class Piece:
         elif direction == "right":
             self.origin[0] += 1
         # if collision is made, rollback changes and update the rects back to rollback state
-        if self.update_rects(direction):
+        if self.update_blocks(direction):
             self.origin = origin
-            self.update_rects()
+            self.update_blocks()
             if direction == "down":
                 self.update_board()
 
                 # handle collision
                 self.game.pieces.remove(self.game.pieces[0])
-                b_type = random.choice(types).upper()
-                colour = colours[b_type]
+                b_type = random.choice(self.game.types).upper()
+                colour = self.game.colours[b_type]
                 self.game.pieces.insert(0, Piece(self.game, b_type, colour))
                 return True
 
@@ -145,6 +133,18 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
+
+        self.fps = 60
+        self.types = ["I", "o", "t", "j", "l", "s", "z"]
+        self.colours = {
+            'I': (0, 255, 255),  # Cyan
+            'O': (255, 255, 0),  # Yellow
+            'T': (128, 0, 128),  # Purple
+            'J': (0, 0, 255),  # Blue
+            'L': (255, 165, 0),  # Orange
+            'S': (0, 255, 0),  # Green
+            'Z': (255, 0, 0)  # Red
+        }
 
         self.grid_size = 20
         self.game_location = (220, 40)
@@ -221,7 +221,7 @@ class Game:
 
             self.render()
 
-            self.clock.tick(fps)
+            self.clock.tick(self.fps)
 
 
 Game().start()
