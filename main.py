@@ -131,7 +131,12 @@ class Piece:
             self.update_rects()
             if direction == "down":
                 self.update_board()
-                # return true to spawn next piece
+
+                # handle collision
+                self.game.pieces.remove(self.game.pieces[0])
+                b_type = random.choice(types).upper()
+                colour = colours[b_type]
+                self.game.pieces.insert(0, Piece(self.game, b_type, colour))
                 return True
 
 
@@ -149,31 +154,40 @@ class Game:
             Piece(self, "l", "blue"),
         ]
         self.board = []
+        self.move_down_delay = 30
 
         self.USEREVENT = 1
         pygame.time.set_timer(self.USEREVENT, 250)
 
-    def handle_event(self, event):
+    def handle_input(self, event=None, keys_pressed=None):
+        if keys_pressed:
+            if keys_pressed[pygame.K_s]:
+                if self.move_down_delay > 0:
+                    self.move_down_delay -= 1
+                else:
+                    self.move_down_delay = 5
+                    self.pieces[0].move("down")
+            else:
+                self.move_down_delay = 0
+
+        if not event:  # filter for no event
+            return
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
         direction = None
         if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_SPACE:
+                while not self.pieces[0].move("down"):
+                    pass
             if event.key == pygame.K_d:
-                direction = "right"
+                self.pieces[0].move("right")
             if event.key == pygame.K_a:
-                direction = "left"
+                self.pieces[0].move("left")
             if event.key == pygame.K_w:
                 self.pieces[0].offset_num = (self.pieces[0].offset_num + 1) % len(self.pieces[0].offsets)
-        if event.type == self.USEREVENT:
-            direction = "down"
-        # if a collision is made while moving piece
-        if self.pieces[0].move(direction):
-            # Kill old piece and add new piece
-            self.pieces.remove(self.pieces[0])
-            b_type = random.choice(types).upper()
-            colour = colours[b_type]
-            self.pieces.insert(0, Piece(self, b_type, colour))
+        if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
+            self.pieces[0].move("down")
 
     def render(self):
         self.screen.fill("white")
@@ -201,7 +215,9 @@ class Game:
     def start(self):
         while True:
             for event in pygame.event.get():
-                self.handle_event(event)
+                self.handle_input(event=event, keys_pressed=pygame.key.get_pressed())
+
+            self.handle_input(keys_pressed=pygame.key.get_pressed())
 
             self.render()
 
