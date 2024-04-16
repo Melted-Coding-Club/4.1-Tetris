@@ -139,9 +139,11 @@ class Game:
 
         self.app_state = "menu"
         self.menu_buttons = [
-            {"rect": pygame.Rect(200, 200, 100, 50), "text": "Play", "action": "game", "colour": "green"},
-            {"rect": pygame.Rect(300, 200, 100, 50), "text": "Quit", "action": "quit", "colour": "red"}
+            {"location": (200, 200), "image": pygame.Surface((100, 50)), "text": "Play", "action": "game", "colour": "green"},
+            {"location": (300, 200), "image": pygame.Surface((100, 50)), "text": "Quit", "action": "quit", "colour": "red"}
         ]
+        for i, button in enumerate(self.menu_buttons):
+            button["rect"] = self.menu_buttons[i]["image"].get_rect(topleft=self.menu_buttons[i]["location"])
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
@@ -217,6 +219,7 @@ class Game:
             for i in range(len(rows)):
                 if block["location"][1] == i:
                     rows[i] += 1
+
                     if rows[i] >= self.game_area[0]:
                         self.board = [block for block in self.board if block["location"][1] != i]
                         for block in self.board:
@@ -257,13 +260,11 @@ class Game:
                         self.score = 0
                     self.app_state = button["action"]
 
-
     def render_menu(self):
         for button in self.menu_buttons:
             pygame.draw.rect(self.screen, button["colour"], button["rect"])
             text = self.font.render(button["text"], True, "white")
             self.screen.blit(text, (button["rect"].x + 10, button["rect"].y + 10))
-
 
     def start(self):
         while True:
