@@ -4,6 +4,9 @@ import sys
 fps = 60
 
 
+types = ["i", "o", "t", "j", "l", "s", "z"]
+
+
 class Piece:
     def __init__(self, game, p_type="z", colour="red"):
         self.game = game
@@ -14,12 +17,54 @@ class Piece:
         # Each list of offsets should have the same amount of tuples
         self.offsets = []
         self.offset_num = 0
-        if self.type == "z":
+        if self.type.upper() == "I":
+            self.offsets = [
+                [(0, 1), (1, 1), (2, 1), (3, 1)],
+                [(2, 0), (2, 1), (2, 2), (2, 3)],
+                [(0, 2), (1, 2), (2, 2), (3, 2)],
+                [(1, 0), (1, 1), (1, 2), (1, 3)]
+            ]
+        elif self.type.upper() == "O":
+            self.offsets = [
+                [(1, 1), (1, 2), (2, 1), (2, 2)],
+                [(1, 1), (1, 2), (2, 1), (2, 2)],
+                [(1, 1), (1, 2), (2, 1), (2, 2)],
+                [(1, 1), (1, 2), (2, 1), (2, 2)]
+            ]
+        elif self.type.upper() == "T":
+            self.offsets = [
+                [(1, 0), (0, 1), (1, 1), (2, 1)],
+                [(1, 0), (1, 1), (2, 1), (1, 2)],
+                [(0, 1), (1, 1), (2, 1), (1, 2)],
+                [(1, 0), (0, 1), (1, 1), (1, 2)]
+            ]
+        elif self.type.upper() == "J":
+            self.offsets = [
+                [(1, 0), (1, 1), (1, 2), (0, 2)],
+                [(0, 1), (1, 1), (2, 1), (2, 0)],
+                [(1, 0), (1, 1), (1, 2), (2, 2)],
+                [(0, 1), (1, 1), (2, 1), (0, 2)]
+            ]
+        elif self.type.upper() == "L":
+            self.offsets = [
+                [(1, 0), (1, 1), (1, 2), (2, 2)],
+                [(0, 1), (1, 1), (2, 1), (0, 0)],
+                [(0, 0), (1, 0), (1, 1), (1, 2)],
+                [(0, 1), (1, 1), (2, 1), (2, 2)]
+            ]
+        elif self.type.upper() == "S":
+            self.offsets = [
+                [(1, 0), (2, 0), (0, 1), (1, 1)],  # Original position
+                [(0, 0), (0, 1), (1, 1), (1, 2)],  # Rotated 90 degrees clockwise
+                [(1, 1), (2, 1), (0, 0), (1, 0)],  # Rotated 180 degrees clockwise
+                [(1, 0), (1, 1), (2, 1), (2, 2)]  # Rotated 270 degrees clockwise
+            ]
+        elif self.type.upper() == "Z":
             self.offsets = [
                 [(0, 0), (1, 0), (1, 1), (2, 1)],  # Original position
                 [(1, 0), (1, 1), (0, 1), (0, 2)],  # Rotated 90 degrees clockwise
                 [(2, 1), (1, 1), (1, 0), (0, 0)],  # Rotated 180 degrees clockwise
-                [(0, 2), (0, 1), (1, 1), (1, 0)]   # Rotated 270 degrees clockwise
+                [(0, 2), (0, 1), (1, 1), (1, 0)]  # Rotated 270 degrees clockwise
             ]
 
     def render(self):
@@ -41,7 +86,7 @@ class Piece:
 
         self.game.board.extend(blocks)
 
-    def update_rects(self):
+    def update_rects(self, direction=None):
         # returns True if a collision is made
 
         blocks = []
@@ -71,12 +116,13 @@ class Piece:
         elif direction == "right":
             self.origin[0] += 1
         # if collision is made, rollback changes and update the rects back to rollback state
-        if self.update_rects():
+        if self.update_rects(direction):
             self.origin = origin
             self.update_rects()
-            self.update_board()
-            # return true for collision
-            return True
+            if direction == "down":
+                self.update_board()
+                # return true to spawn next piece
+                return True
 
 
 class Game:
@@ -90,7 +136,7 @@ class Game:
         self.game_area = (10, 20)
 
         self.pieces = [
-            Piece(self),
+            Piece(self, "l", "blue"),
         ]
         self.board = []
 
