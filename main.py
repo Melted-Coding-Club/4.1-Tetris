@@ -132,8 +132,13 @@ class Game:
         pygame.init()
         self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont("Arial", 24)
 
         self.app_state = "menu"
+        self.menu_buttons = [
+            {"rect": pygame.Rect(200, 200, 100, 50), "text": "Play", "action": "game", "colour": "green"},
+            {"rect": pygame.Rect(300, 200, 100, 50), "text": "Quit", "action": "quit", "colour": "red"}
+        ]
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
@@ -228,11 +233,35 @@ class Game:
 
         pygame.display.update()
 
+    def handle_menu_input(self, event):
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            sys.exit()
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            for button in self.menu_buttons:
+                if button["rect"].collidepoint(event.pos):
+                    if button["action"] == "quit":
+                        pygame.quit()
+                        sys.exit()
+                    self.app_state = button["action"]
+
+
+    def render_menu(self):
+        self.screen.fill("white")
+        for button in self.menu_buttons:
+            pygame.draw.rect(self.screen, button["colour"], button["rect"])
+            text = self.font.render(button["text"], True, "white")
+            self.screen.blit(text, (button["rect"].x + 10, button["rect"].y + 10))
+        pygame.display.update()
+
 
     def start(self):
         while True:
             while self.app_state == "menu":
-                pass
+                for event in pygame.event.get():
+                    self.handle_menu_input(event=event)
+
+                self.render_menu()
 
             while self.app_state == "game":
                 for event in pygame.event.get():
