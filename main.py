@@ -4,10 +4,10 @@ import sys
 
 
 class Piece:
-    def __init__(self, game, p_type="z", colour="red"):
+    def __init__(self, game, p_type="z"):
         self.game = game
         self.origin = [0, 0]
-        self.colour = colour
+        self.image = self.game.images[p_type.upper()]
         self.type = p_type
 
         # Each list of offsets should have the same amount of tuples
@@ -65,19 +65,18 @@ class Piece:
 
     def render(self):
         for offset in self.offsets[self.offset_num]:
-            pygame.draw.rect(self.game.screen, self.colour, pygame.Rect(
-                self.origin[0] * self.game.grid_size + offset[0] * self.game.grid_size + self.game.game_location[0],
-                self.origin[1] * self.game.grid_size + offset[1] * self.game.grid_size + self.game.game_location[1],
-                self.game.grid_size,
-                self.game.grid_size
-            ))
+            image = self.game.images[self.type.upper()]
+            image = pygame.transform.scale(image, (self.game.grid_size, self.game.grid_size))
+            location = (self.origin[0] * self.game.grid_size + offset[0] * self.game.grid_size + self.game.game_location[0],
+                        self.origin[1] * self.game.grid_size + offset[1] * self.game.grid_size + self.game.game_location[1])
+            self.game.screen.blit(image, tuple(location))
 
     def update_board(self):
         blocks = []
         for offset in self.offsets[self.offset_num]:
             block = {
                 "location": (offset[0] + self.origin[0], offset[1] + self.origin[1]),
-                "colour": self.colour
+                "image": self.image
             }
             blocks.append(block)
             if block["location"][1] <= 0:
@@ -88,23 +87,20 @@ class Piece:
     def update_blocks(self, direction=None):
         # returns True if a collision is made
 
-        blocks = []
+        block_locations = []
         for offset in self.offsets[self.offset_num]:
-            blocks.append({
-                "location": (offset[0] + self.origin[0], offset[1] + self.origin[1]),
-                "colour": self.colour
-            })
+            block_locations.append((offset[0] + self.origin[0], offset[1] + self.origin[1]))
 
         board_locations = []
         for block in self.game.board:
             board_locations.append(block["location"])
 
-        for block in blocks:
-            if block["location"][1] >= self.game.game_area[1]:
+        for block_location in block_locations:
+            if block_location[1] >= self.game.game_area[1]:
                 return True
-            if block["location"][0] >= self.game.game_area[0] or block["location"][0] < 0:
+            if block_location[0] >= self.game.game_area[0] or block_location[0] < 0:
                 return True
-            if block["location"] in board_locations:
+            if block_location in board_locations:
                 return True
 
     def move(self, direction):
@@ -125,8 +121,7 @@ class Piece:
                 # handle collision
                 self.game.pieces.remove(self.game.pieces[0])
                 b_type = random.choice(self.game.types).upper()
-                colour = self.game.colours[b_type]
-                self.game.pieces.insert(0, Piece(self.game, b_type, colour))
+                self.game.pieces.insert(0, Piece(self.game, b_type))
                 return True
 
 
@@ -149,23 +144,14 @@ class Game:
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
-        self.colours = {
-            'I': (0, 255, 255),  # Cyan
-            'O': (255, 255, 0),  # Yellow
-            'T': (128, 0, 128),  # Purple
-            'J': (0, 0, 255),  # Blue
-            'L': (255, 165, 0),  # Orange
-            'S': (0, 255, 0),  # Green
-            'Z': (255, 0, 0)  # Red
-        }
         self.images = {
-            (0, 255, 255): pygame.image.load("data/images/blocks/cyan.png"),
-            (255, 255, 0): pygame.image.load("data/images/blocks/yellow.png"),
-            (128, 0, 128): pygame.image.load("data/images/blocks/purple.png"),
-            (0, 0, 255): pygame.image.load("data/images/blocks/blue.png"),
-            (255, 165, 0): pygame.image.load("data/images/blocks/orange.png"),
-            (0, 255, 0): pygame.image.load("data/images/blocks/green.png"),
-            (255, 0, 0): pygame.image.load("data/images/blocks/red.png")
+            'I': pygame.image.load("data/images/blocks/cyan.png"),
+            'O': pygame.image.load("data/images/blocks/yellow.png"),
+            'T': pygame.image.load("data/images/blocks/purple.png"),
+            'J': pygame.image.load("data/images/blocks/blue.png"),
+            'L': pygame.image.load("data/images/blocks/orange.png"),
+            'S': pygame.image.load("data/images/blocks/green.png"),
+            'Z': pygame.image.load("data/images/blocks/red.png")
         }
 
         self.grid_size = 20
@@ -173,7 +159,7 @@ class Game:
         self.game_area = (10, 20)
 
         self.pieces = [
-            Piece(self, "l", "blue"),
+            Piece(self, "l"),
         ]
 
         # Reset variables
@@ -250,12 +236,10 @@ class Game:
             piece.render()
 
         for block in self.board:
-            pygame.draw.rect(self.screen, block["colour"], pygame.Rect(
-                block["location"][0] * self.grid_size + self.game_location[0],
-                block["location"][1] * self.grid_size + self.game_location[1],
-                self.grid_size,
-                self.grid_size
-            ))
+            image = block["image"]
+            image = pygame.transform.scale(image, (self.grid_size, self.grid_size))
+            location = (block["location"][0] * self.grid_size + self.game_location[0], block["location"][1] * self.grid_size + self.game_location[1])
+            self.screen.blit(image, tuple(location))
 
     def handle_menu_input(self, event):
         if event.type == pygame.QUIT:
