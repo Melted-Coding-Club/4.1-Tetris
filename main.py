@@ -139,9 +139,11 @@ class Game:
 
         self.app_state = "menu"
         self.menu_buttons = [
-            {"rect": pygame.Rect(200, 200, 100, 50), "text": "Play", "action": "game", "colour": "green"},
-            {"rect": pygame.Rect(300, 200, 100, 50), "text": "Quit", "action": "quit", "colour": "red"}
+            {"image": pygame.Surface((100, 50)), "location": (200, 200), "text": "Play", "action": "game", "colour": "green"},
+            {"image": pygame.Surface((100, 50)), "location": (300, 200), "text": "Quit", "action": "quit", "colour": "red"}
         ]
+        for button in self.menu_buttons:
+            button["rect"] = button["image"].get_rect(topleft=button["location"])
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
@@ -268,7 +270,7 @@ class Game:
 
     def render_menu(self):
         for button in self.menu_buttons:
-            image = self.images[button["colour"]].scale((button["rect"].width, button["rect"].height))
+            image = button["image"].scale((button["rect"].width, button["rect"].height))
             self.screen.blit(image, button["rect"].topleft)
 
             text = self.font.render(button["text"], True, "white")
