@@ -133,6 +133,8 @@ class Game:
         self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
 
+        self.app_state = "menu"
+
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
         self.colours = {
@@ -158,7 +160,7 @@ class Game:
         self.USEREVENT = 1
         pygame.time.set_timer(self.USEREVENT, 250)
 
-    def handle_input(self, event=None, keys_pressed=None):
+    def handle_game_input(self, event=None, keys_pressed=None):
         if keys_pressed:
             if keys_pressed[pygame.K_s]:
                 if self.move_down_delay > 0:
@@ -188,9 +190,22 @@ class Game:
         if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
             self.pieces[0].move("down")
 
-        self.check_lines()
+        # Check for full row
+        rows = []
+        for i in range(self.game_area[1]):
+            rows.append(0)
 
-    def render(self):
+        for block in self.board:
+            for i in range(len(rows)):
+                if block["location"][1] == i:
+                    rows[i] += 1
+                    if rows[i] >= self.game_area[0]:
+                        self.board = [block for block in self.board if block["location"][1] != i]
+                        for block in self.board:
+                            if block["location"][1] < i:
+                                block["location"] = (block["location"][0], block["location"][1] + 1)
+
+    def render_game(self):
         self.screen.fill("white")
 
         # draw game area in game location
@@ -213,28 +228,18 @@ class Game:
 
         pygame.display.update()
 
-    def check_lines(self):
-        rows = []
-        for i in range(self.game_area[1]):
-            rows.append(0)
-
-        for block in self.board:
-            for i in range(len(rows)):
-                if block["location"][1] == i:
-                    rows[i] += 1
-                    if rows[i] >= self.game_area[0]:
-                        self.board = [block for block in self.board if block["location"][1] != i]
-                        for block in self.board:
-                            if block["location"][1] < i:
-                                block["location"] = (block["location"][0], block["location"][1] + 1)
 
     def start(self):
         while True:
-            for event in pygame.event.get():
-                self.handle_input(event=event, keys_pressed=pygame.key.get_pressed())
-            self.handle_input(keys_pressed=pygame.key.get_pressed())
+            while self.app_state == "menu":
+                pass
 
-            self.render()
+            while self.app_state == "game":
+                for event in pygame.event.get():
+                    self.handle_game_input(event=event, keys_pressed=pygame.key.get_pressed())
+                self.handle_game_input(keys_pressed=pygame.key.get_pressed())
+
+                self.render_game()
 
             self.clock.tick(self.fps)
 
