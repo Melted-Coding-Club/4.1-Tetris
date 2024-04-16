@@ -139,11 +139,13 @@ class Game:
 
         self.app_state = "menu"
         self.menu_buttons = [
-            {"location": (200, 200), "image": pygame.Surface((100, 50)), "text": "Play", "action": "game", "colour": "green"},
-            {"location": (300, 200), "image": pygame.Surface((100, 50)), "text": "Quit", "action": "quit", "colour": "red"}
+            {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
         ]
-        for i, button in enumerate(self.menu_buttons):
-            button["rect"] = self.menu_buttons[i]["image"].get_rect(topleft=self.menu_buttons[i]["location"])
+        for button in self.menu_buttons:
+            if button["size"]:
+                button["image"] = pygame.transform.scale(button["image"], (button["size"][0], button["size"][1]))
+            button["rect"] = button["image"].get_rect(topleft=button["location"])
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
@@ -155,6 +157,15 @@ class Game:
             'L': (255, 165, 0),  # Orange
             'S': (0, 255, 0),  # Green
             'Z': (255, 0, 0)  # Red
+        }
+        self.images = {
+            (0, 255, 255): pygame.image.load("data/images/blocks/cyan.png"),
+            (255, 255, 0): pygame.image.load("data/images/blocks/yellow.png"),
+            (128, 0, 128): pygame.image.load("data/images/blocks/purple.png"),
+            (0, 0, 255): pygame.image.load("data/images/blocks/blue.png"),
+            (255, 165, 0): pygame.image.load("data/images/blocks/orange.png"),
+            (0, 255, 0): pygame.image.load("data/images/blocks/green.png"),
+            (255, 0, 0): pygame.image.load("data/images/blocks/red.png")
         }
 
         self.grid_size = 20
@@ -176,9 +187,11 @@ class Game:
     def game_over(self):
         self.app_state = "game_over"
         self.menu_buttons = [
-            {"rect": pygame.Rect(200, 200, 100, 50), "text": "Play Again", "action": "game", "colour": "green"},
-            {"rect": pygame.Rect(300, 200, 100, 50), "text": "Quit", "action": "quit", "colour": "red"}
+            {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "action": "game"},
+            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "action": "quit"}
         ]
+        for button in self.menu_buttons:
+            button["rect"] = button["image"].get_rect(topleft=button["location"])
 
     def handle_game_input(self, event=None, keys_pressed=None):
         if keys_pressed:
@@ -219,7 +232,6 @@ class Game:
             for i in range(len(rows)):
                 if block["location"][1] == i:
                     rows[i] += 1
-
                     if rows[i] >= self.game_area[0]:
                         self.board = [block for block in self.board if block["location"][1] != i]
                         for block in self.board:
@@ -262,9 +274,8 @@ class Game:
 
     def render_menu(self):
         for button in self.menu_buttons:
-            pygame.draw.rect(self.screen, button["colour"], button["rect"])
-            text = self.font.render(button["text"], True, "white")
-            self.screen.blit(text, (button["rect"].x + 10, button["rect"].y + 10))
+            image = pygame.transform.scale(button["image"], (button["rect"].width, button["rect"].height))
+            self.screen.blit(image, button["rect"].topleft)
 
     def start(self):
         while True:
