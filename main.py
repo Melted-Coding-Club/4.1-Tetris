@@ -1,10 +1,20 @@
+import random
 import pygame
 import sys
 
 fps = 60
 
 
-types = ["i", "o", "t", "j", "l", "s", "z"]
+types = ["I", "o", "t", "j", "l", "s", "z"]
+colours = {
+    'I': (0, 255, 255),   # Cyan
+    'O': (255, 255, 0),   # Yellow
+    'T': (128, 0, 128),   # Purple
+    'J': (0, 0, 255),     # Blue
+    'L': (255, 165, 0),   # Orange
+    'S': (0, 255, 0),     # Green
+    'Z': (255, 0, 0)      # Red
+}
 
 
 class Piece:
@@ -159,9 +169,11 @@ class Game:
             direction = "down"
         # if a collision is made while moving piece
         if self.pieces[0].move(direction):
-            # spawn a new piece
+            # Kill old piece and add new piece
             self.pieces.remove(self.pieces[0])
-            self.pieces.insert(0, Piece(self))
+            b_type = random.choice(types).upper()
+            colour = colours[b_type]
+            self.pieces.insert(0, Piece(self, b_type, colour))
 
     def render(self):
         self.screen.fill("white")
