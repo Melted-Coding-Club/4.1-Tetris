@@ -101,7 +101,6 @@ class Piece:
                 return True
             if block["location"][0] >= self.game.game_area[0] or block["location"][0] < 0:
                 return True
-
             if block["location"] in board_locations:
                 return True
 
@@ -189,6 +188,8 @@ class Game:
         if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
             self.pieces[0].move("down")
 
+        self.check_lines()
+
     def render(self):
         self.screen.fill("white")
 
@@ -212,11 +213,25 @@ class Game:
 
         pygame.display.update()
 
+    def check_lines(self):
+        rows = []
+        for i in range(self.game_area[1]):
+            rows.append(0)
+
+        for block in self.board:
+            for i in range(len(rows)):
+                if block["location"][1] == i:
+                    rows[i] += 1
+                    if rows[i] >= self.game_area[0]:
+                        self.board = [block for block in self.board if block["location"][1] != i]
+                        for block in self.board:
+                            if block["location"][1] < i:
+                                block["location"] = (block["location"][0], block["location"][1] + 1)
+
     def start(self):
         while True:
             for event in pygame.event.get():
                 self.handle_input(event=event, keys_pressed=pygame.key.get_pressed())
-
             self.handle_input(keys_pressed=pygame.key.get_pressed())
 
             self.render()
