@@ -154,6 +154,15 @@ class Game:
             'S': (0, 255, 0),  # Green
             'Z': (255, 0, 0)  # Red
         }
+        self.images = {
+            (0, 255, 255): pygame.image.load("cyan.png"),
+            (255, 255, 0): pygame.image.load("yellow.png"),
+            (128, 0, 128): pygame.image.load("purple.png"),
+            (0, 0, 255): pygame.image.load("blue.png"),
+            (255, 165, 0): pygame.image.load("orange.png"),
+            (0, 255, 0): pygame.image.load("green.png"),
+            (255, 0, 0): pygame.image.load("red.png")
+        }
 
         self.grid_size = 20
         self.game_location = (220, 40)
@@ -257,13 +266,13 @@ class Game:
                         self.score = 0
                     self.app_state = button["action"]
 
-
     def render_menu(self):
         for button in self.menu_buttons:
-            pygame.draw.rect(self.screen, button["colour"], button["rect"])
+            image = self.images[button["colour"]].scale((button["rect"].width, button["rect"].height))
+            self.screen.blit(image, button["rect"].topleft)
+
             text = self.font.render(button["text"], True, "white")
             self.screen.blit(text, (button["rect"].x + 10, button["rect"].y + 10))
-
 
     def start(self):
         while True:
