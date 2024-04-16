@@ -75,10 +75,13 @@ class Piece:
     def update_board(self):
         blocks = []
         for offset in self.offsets[self.offset_num]:
-            blocks.append({
+            block = {
                 "location": (offset[0] + self.origin[0], offset[1] + self.origin[1]),
                 "colour": self.colour
-            })
+            }
+            blocks.append(block)
+            if block["location"][1] <= 0:
+                self.game.game_over()
 
         self.game.board.extend(blocks)
 
@@ -159,11 +162,21 @@ class Game:
         self.pieces = [
             Piece(self, "l", "blue"),
         ]
+
+        # Reset variables
         self.board = []
+        self.score = 0
         self.move_down_delay = 30
 
         self.USEREVENT = 1
         pygame.time.set_timer(self.USEREVENT, 250)
+
+    def game_over(self):
+        self.app_state = "game_over"
+        self.menu_buttons = [
+            {"rect": pygame.Rect(200, 200, 100, 50), "text": "Play Again", "action": "game", "colour": "green"},
+            {"rect": pygame.Rect(300, 200, 100, 50), "text": "Quit", "action": "quit", "colour": "red"}
+        ]
 
     def handle_game_input(self, event=None, keys_pressed=None):
         if keys_pressed:
@@ -211,8 +224,6 @@ class Game:
                                 block["location"] = (block["location"][0], block["location"][1] + 1)
 
     def render_game(self):
-        self.screen.fill("white")
-
         # draw game area in game location
         pygame.draw.rect(self.screen, "black", (
             self.game_location[0],
@@ -231,8 +242,6 @@ class Game:
                 self.grid_size
             ))
 
-        pygame.display.update()
-
     def handle_menu_input(self, event):
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -243,16 +252,17 @@ class Game:
                     if button["action"] == "quit":
                         pygame.quit()
                         sys.exit()
+                    if button["action"] == "game":
+                        self.board = []
+                        self.score = 0
                     self.app_state = button["action"]
 
 
     def render_menu(self):
-        self.screen.fill("white")
         for button in self.menu_buttons:
             pygame.draw.rect(self.screen, button["colour"], button["rect"])
             text = self.font.render(button["text"], True, "white")
             self.screen.blit(text, (button["rect"].x + 10, button["rect"].y + 10))
-        pygame.display.update()
 
 
     def start(self):
@@ -260,15 +270,28 @@ class Game:
             while self.app_state == "menu":
                 for event in pygame.event.get():
                     self.handle_menu_input(event=event)
-
+                # Render
+                self.screen.fill("white")
                 self.render_menu()
+                pygame.display.update()
+
+            while self.app_state == "game_over":
+                for event in pygame.event.get():
+                    self.handle_menu_input(event=event)
+                # Render
+                self.screen.fill("white")
+                self.render_game()
+                self.render_menu()
+                pygame.display.update()
 
             while self.app_state == "game":
                 for event in pygame.event.get():
                     self.handle_game_input(event=event, keys_pressed=pygame.key.get_pressed())
                 self.handle_game_input(keys_pressed=pygame.key.get_pressed())
-
+                # Render
+                self.screen.fill("white")
                 self.render_game()
+                pygame.display.update()
 
             self.clock.tick(self.fps)
 
