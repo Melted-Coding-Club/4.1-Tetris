@@ -1,7 +1,7 @@
-import copy
 import random
 import pygame
 import sys
+import asyncio
 
 
 class Piece:
@@ -342,7 +342,7 @@ class Game:
 
             pygame.display.update()
             self.screen.fill("white")
+            asyncio.sleep(0)  # Required for creating a Web Version
             self.clock.tick(self.fps)
-
 
 Game().start()
