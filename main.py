@@ -125,7 +125,7 @@ class Piece:
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode()
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 24)
 
@@ -197,6 +197,14 @@ class Game:
             if event.key == pygame.K_SPACE:
                 while not self.pieces[0].move("down"):
                     pass
+            if event.key == pygame.K_ESCAPE:
+                self.app_state = "paused"
+                self.menu_buttons = [
+                    {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+                    {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
+                ]
+                for button in self.menu_buttons:
+                    button["rect"] = button["image"].get_rect(topleft=button["location"])
             if event.key == pygame.K_d:
                 self.pieces[0].move("right")
             if event.key == pygame.K_a:
@@ -242,6 +250,10 @@ class Game:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.KEYDOWN:
+            if self.app_state == "paused":
+                if event.key == pygame.K_ESCAPE:
+                    self.app_state = "game"
         if event.type == pygame.MOUSEBUTTONDOWN:
             for button in self.menu_buttons:
                 if button["rect"].collidepoint(event.pos):
@@ -265,6 +277,17 @@ class Game:
                     self.handle_menu_input(event=event)
                 # Render
                 self.screen.fill("white")
+                self.render_menu()
+                pygame.display.update()
+
+                self.clock.tick(self.fps)
+
+            while self.app_state == "paused":
+                for event in pygame.event.get():
+                    self.handle_menu_input(event=event)
+                # Render
+                self.screen.fill("white")
+                self.render_game()
                 self.render_menu()
                 pygame.display.update()
 
