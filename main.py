@@ -84,7 +84,8 @@ class Piece:
             }
             blocks.append(block)
             if block["location"][1] <= 0:
-                self.game.game_over()
+                self.game.app_state = "game_over"
+                self.game.update_menu()
 
         self.game.board.extend(blocks)
 
@@ -139,14 +140,8 @@ class Game:
         self.font = pygame.font.SysFont("Arial", 24)
 
         self.app_state = "menu"
-        self.menu_buttons = [
-            {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
-        ]
-        for button in self.menu_buttons:
-            if button["size"]:
-                button["image"] = pygame.transform.scale(button["image"], (button["size"][0], button["size"][1]))
-            button["rect"] = button["image"].get_rect(topleft=button["location"])
+        self.menu_buttons = []
+        self.update_menu()
 
         self.fps = 60
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
@@ -181,13 +176,26 @@ class Game:
         self.USEREVENT = 1
         pygame.time.set_timer(self.USEREVENT, 250)
 
-    def game_over(self):
-        self.app_state = "game_over"
-        self.menu_buttons = [
-            {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
-        ]
+    def update_menu(self):
+        if self.app_state == "menu":
+            self.menu_buttons = [
+                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
+            ]
+        elif self.app_state == "game_over":
+            self.menu_buttons = [
+                {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
+            ]
+        elif self.app_state == "paused":
+            self.menu_buttons = [
+                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"},
+                {"image": pygame.image.load("data/images/buttons/menu.png"), "location": (300, 250), "size": (100, 50), "action": "menu"}
+            ]
         for button in self.menu_buttons:
+            if button["size"]:
+                button["image"] = pygame.transform.scale(button["image"], (button["size"][0], button["size"][1]))
             button["rect"] = button["image"].get_rect(topleft=button["location"])
 
     def handle_game_input_frame(self, keys_pressed=None):
@@ -209,12 +217,7 @@ class Game:
                     pass
             if event.key == pygame.K_ESCAPE:
                 self.app_state = "paused"
-                self.menu_buttons = [
-                    {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-                    {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
-                ]
-                for button in self.menu_buttons:
-                    button["rect"] = button["image"].get_rect(topleft=button["location"])
+                self.update_menu()
             if event.key == pygame.K_c:
                 if len(self.stored_pieces) < 1:
                     self.stored_pieces.append(self.pieces[0])
@@ -281,7 +284,7 @@ class Game:
             sys.exit()
         if event.type == pygame.VIDEORESIZE:
             self.screen = pygame.display.set_mode((event.w, event.w), pygame.RESIZABLE)
-            self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
+            self.grid_size = round(self.screen.get_size()[0] / self.screen_grid[0])
 
     def handle_menu_input(self, event):
         if event.type == pygame.KEYDOWN:
@@ -298,6 +301,7 @@ class Game:
                         self.board = []
                         self.score = 0
                     self.app_state = button["action"]
+                    self.update_menu()
 
     def render_menu(self):
         for button in self.menu_buttons:
