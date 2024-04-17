@@ -6,7 +6,8 @@ import sys
 class Piece:
     def __init__(self, game, p_type="z"):
         self.game = game
-        self.origin = [0, 0]
+        x = random.randint(1, self.game.game_area[0] - 4)
+        self.origin = [x, 0]
         self.image = self.game.images[p_type.upper()]
         self.type = p_type
 
@@ -60,12 +61,16 @@ class Piece:
                 [(0, 2), (0, 1), (1, 1), (1, 0)]  # Rotated 270 degrees clockwise
             ]
 
-    def render(self):
+    def render(self, origin_overwrite=None):
+        if origin_overwrite:
+            origin = origin_overwrite
+        else:
+            origin = (self.origin[0] + self.game.game_location[0], self.origin[1] + self.game.game_location[1])
         for offset in self.offsets[self.offset_num]:
             image = self.game.images[self.type.upper()]
             image = pygame.transform.scale(image, (self.game.grid_size, self.game.grid_size))
-            location = (self.origin[0] * self.game.grid_size + offset[0] * self.game.grid_size + self.game.game_location[0] * self.game.grid_size,
-                        self.origin[1] * self.game.grid_size + offset[1] * self.game.grid_size + self.game.game_location[1] * self.game.grid_size)
+            location = (origin[0] * self.game.grid_size + offset[0] * self.game.grid_size,
+                        origin[1] * self.game.grid_size + offset[1] * self.game.grid_size)
             self.game.screen.blit(image, tuple(location))
 
     def update_board(self):
@@ -118,7 +123,7 @@ class Piece:
                 # handle collision
                 self.game.pieces.remove(self.game.pieces[0])
                 b_type = random.choice(self.game.types).upper()
-                self.game.pieces.insert(0, Piece(self.game, b_type))
+                self.game.pieces.append(Piece(self.game, b_type))
                 return True
 
 
@@ -158,6 +163,9 @@ class Game:
 
         self.pieces = [
             Piece(self, "l"),
+            Piece(self, "s"),
+            Piece(self, "j"),
+            Piece(self, "z"),
         ]
 
         # Reset variables
@@ -178,14 +186,15 @@ class Game:
             button["rect"] = button["image"].get_rect(topleft=button["location"])
 
     def handle_game_input_frame(self, keys_pressed=None):
-        if keys_pressed[pygame.K_s]:
-            if self.move_down_delay > 0:
-                self.move_down_delay -= 1
+        if keys_pressed:
+            if keys_pressed[pygame.K_s]:
+                if self.move_down_delay > 0:
+                    self.move_down_delay -= 1
+                else:
+                    self.move_down_delay = 5
+                    self.pieces[0].move("down")
             else:
-                self.move_down_delay = 5
-                self.pieces[0].move("down")
-        else:
-            self.move_down_delay = 0
+                self.move_down_delay = 0
 
     def handle_game_input_event(self, event=None, keys_pressed=None):
         direction = None
@@ -207,8 +216,9 @@ class Game:
                 self.pieces[0].move("left")
             if event.key == pygame.K_w:
                 self.pieces[0].offset_num = (self.pieces[0].offset_num + 1) % len(self.pieces[0].offsets)
-        if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
-            self.pieces[0].move("down")
+        if keys_pressed:
+            if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
+                self.pieces[0].move("down")
 
         # Check for full row
         rows = []
@@ -233,8 +243,11 @@ class Game:
             self.game_area[0] * self.grid_size,
             self.game_area[1] * self.grid_size
         ))
-        for piece in self.pieces:
-            piece.render()
+        for i, piece in enumerate(self.pieces):
+            if i == 0:
+                piece.render()
+            if i >= 1:
+                piece.render((2, (i-1)*5 + 2))
 
         for block in self.board:
             image = block["image"]
@@ -299,7 +312,7 @@ class Game:
             while self.app_state == "game":
                 for event in pygame.event.get():
                     self.handle_general_input_event(event=event)
-                    self.handle_game_input_event(event=event)
+                    self.handle_game_input_event(event=event, keys_pressed=pygame.key.get_pressed())
                 self.handle_game_input_frame(keys_pressed=pygame.key.get_pressed())
                 # Render
                 self.screen.fill("white")
