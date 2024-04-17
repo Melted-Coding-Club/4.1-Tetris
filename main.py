@@ -1,7 +1,7 @@
 import random
+import asyncio
 import pygame
 import sys
-import asyncio
 
 
 class Piece:
@@ -139,7 +139,6 @@ class Game:
         self.screen_grid = (22, 22)
         self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
-        self.font = pygame.font.SysFont("Arial", 24)
 
         self.app_state = "menu"
         self.menu_buttons = []
@@ -315,7 +314,7 @@ class Game:
             image = pygame.transform.scale(button["image"], (button["rect"].width, button["rect"].height))
             self.screen.blit(image, button["rect"].topleft)
 
-    def start(self):
+    async def start(self):
         while True:
             if self.app_state == "menu":
                 for event in pygame.event.get():
@@ -342,7 +341,8 @@ class Game:
 
             pygame.display.update()
             self.screen.fill("white")
-            asyncio.sleep(0)  # Required for creating a Web Version
+            await asyncio.sleep(0)  # Required for creating a Web Version
             self.clock.tick(self.fps)
 
-Game().start()
+
+asyncio.run(Game().start())
