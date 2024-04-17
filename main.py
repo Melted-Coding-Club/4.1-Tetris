@@ -135,7 +135,9 @@ class Piece:
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode((600, 600), pygame.RESIZABLE)
+        default_grid_size = 30
+        self.screen_grid = (22, 22)
+        self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 24)
 
@@ -155,7 +157,6 @@ class Game:
             'Z': pygame.image.load("data/images/blocks/red.png")
         }
 
-        self.screen_grid = (22, 22)
         self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
         self.game_location = (6, 1)
         self.game_area = (10, 20)
@@ -299,6 +300,12 @@ class Game:
                         sys.exit()
                     if button["action"] == "game":
                         self.board = []
+                        self.pieces = [
+                            Piece(self, "l"),
+                            Piece(self, "s"),
+                            Piece(self, "j"),
+                            Piece(self, "z"),
+                        ]
                         self.score = 0
                     self.app_state = button["action"]
                     self.update_menu()
@@ -310,40 +317,32 @@ class Game:
 
     def start(self):
         while True:
-            while self.app_state == "menu":
+            if self.app_state == "menu":
                 for event in pygame.event.get():
                     self.handle_general_input_event(event=event)
                     self.handle_menu_input(event=event)
                 # Render
-                self.screen.fill("white")
                 self.render_menu()
-                pygame.display.update()
 
-                self.clock.tick(self.fps)
-
-            while self.app_state == "game_over" or self.app_state == "paused":
+            elif self.app_state == "game_over" or self.app_state == "paused":
                 for event in pygame.event.get():
                     self.handle_general_input_event(event=event)
                     self.handle_menu_input(event=event)
                 # Render
-                self.screen.fill("white")
                 self.render_game()
                 self.render_menu()
-                pygame.display.update()
 
-                self.clock.tick(self.fps)
-
-            while self.app_state == "game":
+            elif self.app_state == "game":
                 for event in pygame.event.get():
                     self.handle_general_input_event(event=event)
                     self.handle_game_input_event(event=event, keys_pressed=pygame.key.get_pressed())
                 self.handle_game_input_frame(keys_pressed=pygame.key.get_pressed())
                 # Render
-                self.screen.fill("white")
                 self.render_game()
-                pygame.display.update()
 
-                self.clock.tick(self.fps)
+            pygame.display.update()
+            self.screen.fill("white")
+            self.clock.tick(self.fps)
 
 
 Game().start()
