@@ -1,3 +1,4 @@
+import copy
 import random
 import pygame
 import sys
@@ -10,6 +11,7 @@ class Piece:
         self.origin = [x, 0]
         self.image = self.game.images[p_type.upper()]
         self.type = p_type
+        self.swapped = False
 
         # Each list of offsets should have the same amount of tuples
         self.offsets = []
@@ -119,12 +121,14 @@ class Piece:
             self.update_blocks()
             if direction == "down":
                 self.update_board()
-
-                # handle collision
-                self.game.pieces.remove(self.game.pieces[0])
-                b_type = random.choice(self.game.types).upper()
-                self.game.pieces.append(Piece(self.game, b_type))
+                self.new_piece()
+                # return True for collision
                 return True
+
+    def new_piece(self):
+        self.game.pieces.remove(self.game.pieces[0])
+        b_type = random.choice(self.game.types).upper()
+        self.game.pieces.append(Piece(self.game, b_type))
 
 
 class Game:
@@ -167,6 +171,7 @@ class Game:
             Piece(self, "j"),
             Piece(self, "z"),
         ]
+        self.stored_pieces = []
 
         # Reset variables
         self.board = []
@@ -210,6 +215,18 @@ class Game:
                 ]
                 for button in self.menu_buttons:
                     button["rect"] = button["image"].get_rect(topleft=button["location"])
+            if event.key == pygame.K_c:
+                if len(self.stored_pieces) < 1:
+                    self.stored_pieces.append(self.pieces[0])
+                    self.pieces[0].new_piece()
+            if event.key == pygame.K_f:
+                if not self.pieces[0].swapped:
+                    self.stored_pieces.append(self.pieces[0])
+                    self.pieces.remove(self.pieces[0])
+                    self.pieces.insert(0, self.stored_pieces[0])
+                    self.stored_pieces.remove(self.stored_pieces[0])
+                    self.pieces[0].origin[1] = 0
+                    self.pieces[0].swapped = True
             if event.key == pygame.K_d:
                 self.pieces[0].move("right")
             if event.key == pygame.K_a:
@@ -248,6 +265,9 @@ class Game:
                 piece.render()
             if i >= 1:
                 piece.render((2, (i-1)*5 + 2))
+
+        for i, piece in enumerate(self.stored_pieces):
+            piece.render((17, i*5 + 2))
 
         for block in self.board:
             image = block["image"]
