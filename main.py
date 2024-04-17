@@ -170,8 +170,8 @@ class Game:
     def game_over(self):
         self.app_state = "game_over"
         self.menu_buttons = [
-            {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "action": "game"},
-            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "action": "quit"}
+            {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
+            {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
         ]
         for button in self.menu_buttons:
             button["rect"] = button["image"].get_rect(topleft=button["location"])
