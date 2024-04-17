@@ -23,9 +23,6 @@ class Piece:
         elif self.type.upper() == "O":
             self.offsets = [
                 [(1, 1), (1, 2), (2, 1), (2, 2)],
-                [(1, 1), (1, 2), (2, 1), (2, 2)],
-                [(1, 1), (1, 2), (2, 1), (2, 2)],
-                [(1, 1), (1, 2), (2, 1), (2, 2)]
             ]
         elif self.type.upper() == "T":
             self.offsets = [
@@ -271,6 +268,8 @@ class Game:
                 self.render_menu()
                 pygame.display.update()
 
+                self.clock.tick(self.fps)
+
             while self.app_state == "game_over":
                 for event in pygame.event.get():
                     self.handle_menu_input(event=event)
@@ -279,6 +278,8 @@ class Game:
                 self.render_game()
                 self.render_menu()
                 pygame.display.update()
+
+                self.clock.tick(self.fps)
 
             while self.app_state == "game":
                 for event in pygame.event.get():
@@ -289,7 +290,7 @@ class Game:
                 self.render_game()
                 pygame.display.update()
 
-            self.clock.tick(self.fps)
+                self.clock.tick(self.fps)
 
 
 Game().start()
