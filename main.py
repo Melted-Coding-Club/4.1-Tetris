@@ -64,8 +64,8 @@ class Piece:
         for offset in self.offsets[self.offset_num]:
             image = self.game.images[self.type.upper()]
             image = pygame.transform.scale(image, (self.game.grid_size, self.game.grid_size))
-            location = (self.origin[0] * self.game.grid_size + offset[0] * self.game.grid_size + self.game.game_location[0],
-                        self.origin[1] * self.game.grid_size + offset[1] * self.game.grid_size + self.game.game_location[1])
+            location = (self.origin[0] * self.game.grid_size + offset[0] * self.game.grid_size + self.game.game_location[0] * self.game.grid_size,
+                        self.origin[1] * self.game.grid_size + offset[1] * self.game.grid_size + self.game.game_location[1] * self.game.grid_size)
             self.game.screen.blit(image, tuple(location))
 
     def update_board(self):
@@ -125,7 +125,7 @@ class Piece:
 class Game:
     def __init__(self):
         pygame.init()
-        self.screen = pygame.display.set_mode()
+        self.screen = pygame.display.set_mode((600, 600), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
         self.font = pygame.font.SysFont("Arial", 24)
 
@@ -151,8 +151,9 @@ class Game:
             'Z': pygame.image.load("data/images/blocks/red.png")
         }
 
-        self.grid_size = 20
-        self.game_location = (220, 40)
+        self.screen_grid = (22, 22)
+        self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
+        self.game_location = (6, 1)
         self.game_area = (10, 20)
 
         self.pieces = [
@@ -176,22 +177,17 @@ class Game:
         for button in self.menu_buttons:
             button["rect"] = button["image"].get_rect(topleft=button["location"])
 
-    def handle_game_input(self, event=None, keys_pressed=None):
-        if keys_pressed:
-            if keys_pressed[pygame.K_s]:
-                if self.move_down_delay > 0:
-                    self.move_down_delay -= 1
-                else:
-                    self.move_down_delay = 5
-                    self.pieces[0].move("down")
+    def handle_game_input_frame(self, keys_pressed=None):
+        if keys_pressed[pygame.K_s]:
+            if self.move_down_delay > 0:
+                self.move_down_delay -= 1
             else:
-                self.move_down_delay = 0
+                self.move_down_delay = 5
+                self.pieces[0].move("down")
+        else:
+            self.move_down_delay = 0
 
-        if not event:  # filter for no event
-            return
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            sys.exit()
+    def handle_game_input_event(self, event=None, keys_pressed=None):
         direction = None
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
@@ -232,8 +228,8 @@ class Game:
     def render_game(self):
         # draw game area in game location
         pygame.draw.rect(self.screen, "black", (
-            self.game_location[0],
-            self.game_location[1],
+            self.game_location[0] * self.grid_size,
+            self.game_location[1] * self.grid_size,
             self.game_area[0] * self.grid_size,
             self.game_area[1] * self.grid_size
         ))
@@ -243,13 +239,18 @@ class Game:
         for block in self.board:
             image = block["image"]
             image = pygame.transform.scale(image, (self.grid_size, self.grid_size))
-            location = (block["location"][0] * self.grid_size + self.game_location[0], block["location"][1] * self.grid_size + self.game_location[1])
+            location = (block["location"][0] * self.grid_size + self.game_location[0] * self.grid_size, block["location"][1] * self.grid_size + self.game_location[1] * self.grid_size)
             self.screen.blit(image, tuple(location))
 
-    def handle_menu_input(self, event):
+    def handle_general_input_event(self, event):
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        if event.type == pygame.VIDEORESIZE:
+            self.screen = pygame.display.set_mode((event.w, event.w), pygame.RESIZABLE)
+            self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
+
+    def handle_menu_input(self, event):
         if event.type == pygame.KEYDOWN:
             if self.app_state == "paused":
                 if event.key == pygame.K_ESCAPE:
@@ -274,6 +275,7 @@ class Game:
         while True:
             while self.app_state == "menu":
                 for event in pygame.event.get():
+                    self.handle_general_input_event(event=event)
                     self.handle_menu_input(event=event)
                 # Render
                 self.screen.fill("white")
@@ -282,19 +284,9 @@ class Game:
 
                 self.clock.tick(self.fps)
 
-            while self.app_state == "paused":
+            while self.app_state == "game_over" or self.app_state == "paused":
                 for event in pygame.event.get():
-                    self.handle_menu_input(event=event)
-                # Render
-                self.screen.fill("white")
-                self.render_game()
-                self.render_menu()
-                pygame.display.update()
-
-                self.clock.tick(self.fps)
-
-            while self.app_state == "game_over":
-                for event in pygame.event.get():
+                    self.handle_general_input_event(event=event)
                     self.handle_menu_input(event=event)
                 # Render
                 self.screen.fill("white")
@@ -306,8 +298,9 @@ class Game:
 
             while self.app_state == "game":
                 for event in pygame.event.get():
-                    self.handle_game_input(event=event, keys_pressed=pygame.key.get_pressed())
-                self.handle_game_input(keys_pressed=pygame.key.get_pressed())
+                    self.handle_general_input_event(event=event)
+                    self.handle_game_input_event(event=event)
+                self.handle_game_input_frame(keys_pressed=pygame.key.get_pressed())
                 # Render
                 self.screen.fill("white")
                 self.render_game()
