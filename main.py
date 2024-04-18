@@ -135,10 +135,15 @@ class Piece:
 class Game:
     def __init__(self):
         pygame.init()
-        default_grid_size = 30
-        self.screen_grid = (22, 22)
-        self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
         self.clock = pygame.time.Clock()
+
+        default_grid_size = 30
+        self.screen_grid = (22, 24)
+        self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
+        self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
+        self.game_location = (6, 3)
+        self.game_area = (10, 20)
+        self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
 
         self.app_state = "menu"
         self.menu_buttons = []
@@ -155,10 +160,6 @@ class Game:
             'S': pygame.image.load("data/images/blocks/green.png"),
             'Z': pygame.image.load("data/images/blocks/red.png")
         }
-
-        self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
-        self.game_location = (6, 1)
-        self.game_area = (10, 20)
 
         self.pieces = [
             Piece(self, "l"),
@@ -267,7 +268,7 @@ class Game:
             if i == 0:
                 piece.render()
             if i >= 1:
-                piece.render((2, (i-1)*5 + 2))
+                piece.render(origin_overwrite=(2, (i-1)*5 + (self.game_location[1] + 1)))
 
         for i, piece in enumerate(self.stored_pieces):
             piece.render((17, i*5 + 2))
@@ -278,6 +279,11 @@ class Game:
             location = (block["location"][0] * self.grid_size + self.game_location[0] * self.grid_size, block["location"][1] * self.grid_size + self.game_location[1] * self.grid_size)
             self.screen.blit(image, tuple(location))
 
+        # Render Score
+        score_text = f"Score: {self.score}"
+        score_text_location = (3 * self.grid_size, 1 * self.grid_size/2)
+        self.screen.blit(self.score_font.render(score_text, True, "black"), score_text_location)
+
     def handle_general_input_event(self, event):
         if event.type == pygame.QUIT:
             pygame.quit()
@@ -285,6 +291,7 @@ class Game:
         if event.type == pygame.VIDEORESIZE:
             self.screen = pygame.display.set_mode((event.w, event.w), pygame.RESIZABLE)
             self.grid_size = round(self.screen.get_size()[0] / self.screen_grid[0])
+            self.score_font = pygame.font.SysFont("arial", self.grid_size * 2)
 
     def handle_menu_input(self, event):
         if event.type == pygame.KEYDOWN:
