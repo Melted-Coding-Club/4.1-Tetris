@@ -117,6 +117,7 @@ class Piece:
             if direction == "down":
                 self.update_board()
                 self.new_piece()
+                self.game.check_rows()
                 # return True for collision
                 return True
 
@@ -188,6 +189,36 @@ class Game:
                 button["image"] = pygame.transform.scale(button["image"], (button["size"][0], button["size"][1]))
             button["rect"] = button["image"].get_rect(topleft=button["location"])
 
+    def check_rows(self):
+        # Check for full row
+        # create list, one 0 for each row
+        rows = []
+        for i in range(self.game_area[1]):
+            rows.append(0)
+
+        num_rows = 0
+        for block in self.board:
+            for i in range(len(rows)):
+                if block["location"][1] == i:
+                    # increment row number in list for every block
+                    rows[i] += 1
+                    # if 10 or more in one row, it myst be full
+                    if rows[i] >= self.game_area[0]:
+                        num_rows += 1
+                        # remove all blocks in row
+                        self.board = [block for block in self.board if block["location"][1] != i]
+                        for block in self.board:
+                            if block["location"][1] < i:
+                                block["location"] = (block["location"][0], block["location"][1] + 1)
+        if num_rows == 1:
+            self.score += 10
+        elif num_rows == 2:
+            self.score += 40
+        elif num_rows == 3:
+            self.score += 80
+        elif num_rows == 4:
+            self.score += 150
+
     def handle_game_input_frame(self, keys_pressed=None):
         if keys_pressed:
             if keys_pressed[pygame.K_s]:
@@ -196,6 +227,7 @@ class Game:
                 else:
                     self.move_down_delay = 5
                     self.pieces[0].move("down")
+                    self.score += 1
             else:
                 self.move_down_delay = 0
 
@@ -204,6 +236,7 @@ class Game:
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_SPACE:
                 while not self.pieces[0].move("down"):
+                    self.score += 1
                     pass
             if event.key == pygame.K_ESCAPE:
                 self.app_state = "paused"
@@ -229,21 +262,6 @@ class Game:
         if keys_pressed:
             if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
                 self.pieces[0].move("down")
-
-        # Check for full row
-        rows = []
-        for i in range(self.game_area[1]):
-            rows.append(0)
-
-        for block in self.board:
-            for i in range(len(rows)):
-                if block["location"][1] == i:
-                    rows[i] += 1
-                    if rows[i] >= self.game_area[0]:
-                        self.board = [block for block in self.board if block["location"][1] != i]
-                        for block in self.board:
-                            if block["location"][1] < i:
-                                block["location"] = (block["location"][0], block["location"][1] + 1)
 
     def render_game(self):
         # draw game area in game location
