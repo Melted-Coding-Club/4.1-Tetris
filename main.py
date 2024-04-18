@@ -78,9 +78,6 @@ class Piece:
                 "image": self.image
             }
             blocks.append(block)
-            if block["location"][1] <= 0:
-                self.game.app_state = "game_over"
-                self.game.update_menu()
 
         self.game.board.extend(blocks)
 
@@ -121,8 +118,9 @@ class Piece:
             # if moving down, add to the board and get a new piece, check for full rows
             if direction == "down":
                 self.update_board()
-                self.new_piece()
-                self.game.check_rows()
+                # logic prevents a new piece being spawned after death
+                if not self.game.check_rows():
+                    self.new_piece()
                 # return True for down collision allowing for while loops of down movement
                 return True
 
@@ -154,6 +152,7 @@ class Game:
         self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
         self.game_location = (6, 3)
         self.game_area = (10, 20)
+        self.death_buffer = 3
         self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
 
         self.app_state = "menu"
@@ -214,6 +213,13 @@ class Game:
 
         num_rows = 0
         for block in self.board:
+            # checks if block height is above death_buffer
+            if block["location"][1] < self.death_buffer:
+                self.app_state = "game_over"
+                self.update_menu()
+                return True
+
+            # checks for full rows
             for i in range(len(rows)):
                 if block["location"][1] == i:
                     # increment row number in list for every block
@@ -283,9 +289,15 @@ class Game:
         # draw game area in game location
         pygame.draw.rect(self.screen, "black", (
             self.game_location[0] * self.grid_size,
+            self.game_location[1] * self.grid_size + self.death_buffer * self.grid_size,
+            self.game_area[0] * self.grid_size,
+            self.game_area[1] * self.grid_size - self.death_buffer * self.grid_size
+        ))
+        pygame.draw.rect(self.screen, "red", (
+            self.game_location[0] * self.grid_size,
             self.game_location[1] * self.grid_size,
             self.game_area[0] * self.grid_size,
-            self.game_area[1] * self.grid_size
+            self.death_buffer * self.grid_size
         ))
         for i, piece in enumerate(self.pieces):
             if i == 0:
