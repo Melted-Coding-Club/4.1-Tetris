@@ -20,47 +20,41 @@ class Piece:
             self.offsets = [
                 [(0, 1), (1, 1), (2, 1), (3, 1)],
                 [(2, 0), (2, 1), (2, 2), (2, 3)],
-                [(0, 2), (1, 2), (2, 2), (3, 2)],
-                [(1, 0), (1, 1), (1, 2), (1, 3)]
             ]
-        elif self.type.upper() == "O":
+        elif self.type.upper() == "O":  # done
             self.offsets = [
                 [(1, 1), (1, 2), (2, 1), (2, 2)],
             ]
-        elif self.type.upper() == "T":
+        elif self.type.upper() == "T":  # done
             self.offsets = [
                 [(1, 0), (0, 1), (1, 1), (2, 1)],
                 [(1, 0), (1, 1), (2, 1), (1, 2)],
                 [(0, 1), (1, 1), (2, 1), (1, 2)],
                 [(1, 0), (0, 1), (1, 1), (1, 2)]
             ]
-        elif self.type.upper() == "J":
+        elif self.type.upper() == "J":  # done
             self.offsets = [
                 [(1, 0), (1, 1), (1, 2), (0, 2)],
-                [(0, 1), (1, 1), (2, 1), (2, 0)],
-                [(1, 0), (1, 1), (1, 2), (2, 2)],
-                [(0, 1), (1, 1), (2, 1), (0, 2)]
-            ]
-        elif self.type.upper() == "L":
-            self.offsets = [
-                [(1, 0), (1, 1), (1, 2), (2, 2)],
                 [(0, 1), (1, 1), (2, 1), (0, 0)],
-                [(0, 0), (1, 0), (1, 1), (1, 2)],
+                [(1, 0), (1, 1), (1, 2), (2, 0)],
                 [(0, 1), (1, 1), (2, 1), (2, 2)]
             ]
-        elif self.type.upper() == "S":
+        elif self.type.upper() == "L":  # done
+            self.offsets = [
+                [(1, 0), (1, 1), (1, 2), (2, 2)],
+                [(0, 1), (1, 1), (2, 1), (0, 2)],
+                [(0, 0), (1, 0), (1, 1), (1, 2)],
+                [(0, 1), (1, 1), (2, 1), (2, 0)]
+            ]
+        elif self.type.upper() == "S":  # done
             self.offsets = [
                 [(1, 0), (2, 0), (0, 1), (1, 1)],  # Original position
-                [(0, 0), (0, 1), (1, 1), (1, 2)],  # Rotated 90 degrees clockwise
-                [(1, 1), (2, 1), (0, 0), (1, 0)],  # Rotated 180 degrees clockwise
-                [(1, 0), (1, 1), (2, 1), (2, 2)]  # Rotated 270 degrees clockwise
+                [(1, 0), (1, 1), (2, 1), (2, 2)],  # Rotated 90 degrees clockwise
             ]
         elif self.type.upper() == "Z":
             self.offsets = [
                 [(0, 0), (1, 0), (1, 1), (2, 1)],  # Original position
                 [(1, 0), (1, 1), (0, 1), (0, 2)],  # Rotated 90 degrees clockwise
-                [(2, 1), (1, 1), (1, 0), (0, 0)],  # Rotated 180 degrees clockwise
-                [(0, 2), (0, 1), (1, 1), (1, 0)]  # Rotated 270 degrees clockwise
             ]
 
     def render(self, origin_overwrite=None):
@@ -161,12 +155,7 @@ class Game:
             'Z': pygame.image.load("data/images/blocks/red.png")
         }
 
-        self.pieces = [
-            Piece(self, "l"),
-            Piece(self, "s"),
-            Piece(self, "j"),
-            Piece(self, "z"),
-        ]
+        self.pieces = []
         self.stored_pieces = []
 
         # Reset variables
@@ -307,10 +296,10 @@ class Game:
                     if button["action"] == "game":
                         self.board = []
                         self.pieces = [
-                            Piece(self, "l"),
                             Piece(self, "s"),
-                            Piece(self, "j"),
                             Piece(self, "z"),
+                            Piece(self, "j"),
+                            Piece(self, "j"),
                         ]
                         self.score = 0
                     self.app_state = button["action"]
