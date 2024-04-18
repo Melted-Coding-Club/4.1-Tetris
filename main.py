@@ -146,13 +146,13 @@ class Game:
         # general pygame variables
         pygame.init()
         self.clock = pygame.time.Clock()
-        self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
 
         # set attributes for game
         default_grid_size = 30
         self.screen_grid = (22, 24)
         self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
         self.grid_size = self.screen.get_size()[0] / self.screen_grid[0]
+        self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
         self.game_location = (6, 3)
         self.game_area = (10, 20)
         self.death_buffer = 3
