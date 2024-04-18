@@ -143,9 +143,12 @@ class Piece:
 
 class Game:
     def __init__(self):
+        # general pygame variables
         pygame.init()
         self.clock = pygame.time.Clock()
+        self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
 
+        # set attributes for game
         default_grid_size = 30
         self.screen_grid = (22, 24)
         self.screen = pygame.display.set_mode((self.screen_grid[0] * default_grid_size, self.screen_grid[1] * default_grid_size), pygame.RESIZABLE)
@@ -153,13 +156,18 @@ class Game:
         self.game_location = (6, 3)
         self.game_area = (10, 20)
         self.death_buffer = 3
-        self.score_font = pygame.font.SysFont("arial", int(self.grid_size * 2))  # updated in handle_general_input_event
+        self.max_stored_pieces = 3
+        self.fps = 60
 
+        self.USEREVENT = 1
+        pygame.time.set_timer(self.USEREVENT, 250)
+
+        # Menus & app states
         self.app_state = "menu"
         self.menu_buttons = []
         self.update_menu()
 
-        self.fps = 60
+        # Pieces
         self.types = ["I", "o", "t", "j", "l", "s", "z"]
         self.images = {
             'I': pygame.image.load("data/images/blocks/cyan.png"),
@@ -170,7 +178,6 @@ class Game:
             'S': pygame.image.load("data/images/blocks/green.png"),
             'Z': pygame.image.load("data/images/blocks/red.png")
         }
-
         self.pieces = []
         self.stored_pieces = []
 
@@ -178,9 +185,6 @@ class Game:
         self.board = []
         self.score = 0
         self.move_down_delay = 30
-
-        self.USEREVENT = 1
-        pygame.time.set_timer(self.USEREVENT, 250)
 
     def update_menu(self):
         if self.app_state == "menu":
@@ -263,11 +267,10 @@ class Game:
             if event.key == pygame.K_ESCAPE:
                 self.app_state = "paused"
                 self.update_menu()
-            if event.key == pygame.K_c:
-                if len(self.stored_pieces) < 1:
+            if event.key == pygame.K_f:
+                if len(self.stored_pieces) < self.max_stored_pieces:
                     self.stored_pieces.append(self.pieces[0])
                     self.pieces[0].new_piece()
-            if event.key == pygame.K_f:
                 if not self.pieces[0].swapped:
                     self.stored_pieces.append(self.pieces[0])
                     self.pieces.remove(self.pieces[0])
@@ -303,10 +306,10 @@ class Game:
             if i == 0:
                 piece.render()
             if i >= 1:
-                piece.render(origin_overwrite=(2, (i-1)*5 + (self.game_location[1] + 1)))
+                piece.render(origin_overwrite=(self.game_location[0] - 5, (i-1)*5 + (self.game_location[1] + 1)))
 
         for i, piece in enumerate(self.stored_pieces):
-            piece.render((17, i*5 + 2))
+            piece.render(origin_overwrite=(self.game_location[0] + self.game_area[0] + 1, i * 5 + (self.game_location[1] + 1)))
 
         for block in self.board:
             image = block["image"]
