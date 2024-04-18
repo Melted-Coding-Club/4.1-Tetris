@@ -1,3 +1,4 @@
+import copy
 import random
 import asyncio
 import pygame
@@ -83,7 +84,7 @@ class Piece:
 
         self.game.board.extend(blocks)
 
-    def update_blocks(self, direction=None):
+    def check_collision(self):
         # returns True if a collision is made
 
         block_locations = []
@@ -102,29 +103,44 @@ class Piece:
             if block_location in board_locations:
                 return True
 
+    # Makes a valid move
     def move(self, direction):
+        # Save current origin in case of rollback
         origin = self.origin.copy()
+        # Add a direction to origin dependent on direction
         if direction == "down":
             self.origin[1] += 1
         elif direction == "left":
             self.origin[0] -= 1
         elif direction == "right":
             self.origin[0] += 1
-        # if collision is made, rollback changes and update the rects back to rollback state
-        if self.update_blocks(direction):
+        # check if a collision occurred
+        if self.check_collision():
+            # if a collision occurred, rollback the origin
             self.origin = origin
-            self.update_blocks()
+            # if moving down, add to the board and get a new piece, check for full rows
             if direction == "down":
                 self.update_board()
                 self.new_piece()
                 self.game.check_rows()
-                # return True for collision
+                # return True for down collision allowing for while loops of down movement
                 return True
 
     def new_piece(self):
         self.game.pieces.remove(self.game.pieces[0])
         b_type = random.choice(self.game.types).upper()
         self.game.pieces.append(Piece(self.game, b_type))
+
+    # Makes a valid rotation
+    def rotate(self, number_of_rotations):
+        # Save current offset in case of rollback
+        offset_num = copy.copy(self.offset_num)
+        # Update offset by 1 up to the length of the list
+        self.offset_num = (self.offset_num + 1) % len(self.offsets)
+        # Check if a collision occurred
+        if self.check_collision():
+            # if a collision occurred, rollback the offset_num
+            self.offset_num = offset_num
 
 
 class Game:
@@ -258,7 +274,7 @@ class Game:
             if event.key == pygame.K_a:
                 self.pieces[0].move("left")
             if event.key == pygame.K_w:
-                self.pieces[0].offset_num = (self.pieces[0].offset_num + 1) % len(self.pieces[0].offsets)
+                self.pieces[0].rotate(1)
         if keys_pressed:
             if event.type == self.USEREVENT and not keys_pressed[pygame.K_s]:
                 self.pieces[0].move("down")
