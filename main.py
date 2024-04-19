@@ -271,7 +271,7 @@ class Game:
                 if len(self.stored_pieces) < self.max_stored_pieces:
                     self.stored_pieces.append(self.pieces[0])
                     self.pieces[0].new_piece()
-                if not self.pieces[0].swapped:
+                elif not self.pieces[0].swapped:
                     self.stored_pieces.append(self.pieces[0])
                     self.pieces.remove(self.pieces[0])
                     self.pieces.insert(0, self.stored_pieces[0])
