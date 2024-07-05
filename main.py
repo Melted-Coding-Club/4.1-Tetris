@@ -156,7 +156,7 @@ class Game:
         self.game_location = (6, 3)
         self.game_area = (10, 20)
         self.death_buffer = 3
-        self.max_stored_pieces = 3
+        self.max_stored_pieces = 1
         self.fps = 60
 
         self.USEREVENT = 1
