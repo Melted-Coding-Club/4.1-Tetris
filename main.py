@@ -189,19 +189,16 @@ class Game:
     def update_menu(self):
         if self.app_state == "menu":
             self.menu_buttons = [
-                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
+                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (230, 200), "size": (200, 100), "action": "game"},
             ]
         elif self.app_state == "game_over":
             self.menu_buttons = [
-                {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"}
+                {"image": pygame.image.load("data/images/buttons/play_again.png"), "location": (230, 200), "size": (200, 100), "action": "game"},
             ]
         elif self.app_state == "paused":
             self.menu_buttons = [
-                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (200, 200), "size": (100, 50), "action": "game"},
-                {"image": pygame.image.load("data/images/buttons/quit.png"), "location": (300, 200), "size": (100, 50), "action": "quit"},
-                {"image": pygame.image.load("data/images/buttons/menu.png"), "location": (300, 250), "size": (100, 50), "action": "menu"}
+                {"image": pygame.image.load("data/images/buttons/play.png"), "location": (230, 200), "size": (200, 100), "action": "game"},
+                {"image": pygame.image.load("data/images/buttons/menu.png"), "location": (230, 300), "size": (200, 100), "action": "menu"}
             ]
         for button in self.menu_buttons:
             if button["size"]:
